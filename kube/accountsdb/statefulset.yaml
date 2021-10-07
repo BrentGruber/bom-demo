@@ -1,0 +1,48 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: accountsdb
+  labels:
+    app: accountsdb
+    tier: db
+spec:
+  serviceName: "accountsdb"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accountsdb
+      tier: db
+  template:
+    metadata:
+      labels:
+        app: accountsdb
+        tier: db
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: accountsdb
+        image: 593393184947.dkr.ecr.us-east-1.amazonaws.com/vre/accountsdb:38aa15b4c2d724b72876ff88b1caa4ebe8118bad
+        envFrom:
+          - configMapRef:
+              name: environment-config
+          - configMapRef:
+              name: accounts-db-config
+          - configMapRef:
+              name: demo-data-config
+        ports:
+          - containerPort: 5432
+            name: postgresdb
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        volumeMounts:
+          - name: postgresdb
+            mountPath: /var/lib/postgresql/data
+            subPath: postgres
+      volumes:
+      - name: postgresdb
+        emptyDir: {}
