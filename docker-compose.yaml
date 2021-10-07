@@ -1,3 +1,8 @@
+x-logging: &default-logging
+  driver: loki
+  options:
+    loki-url: 'http://loki.safemoon.joshcorp.co/api/prom/push'
+
 version: "3.7"
 services: 
     traefik:
@@ -16,6 +21,16 @@ services:
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
       networks:
           - bom
+      logging: *default-logging
+
+    # gf_agent:
+    #   image: grafana/agent:v0.19.0
+    #   container_name: gf_agent
+    #   volumes:
+    #     - /var/log:/var/log
+    #     - /var/lib/docker:/var/lib/docker
+    #     - ./config/agent.yaml:/etc/config.yaml
+    #   command: --config.file=/etc/config.yaml
 
     adminer:
       image: adminer
@@ -26,6 +41,7 @@ services:
         - "traefik.http.services.adminer.loadbalancer.server.port=8080"
         - "traefik.http.routers.adminer.rule=Host(`adminer.localhost`)"
         - "traefik.http.routers.adminer.entrypoints=web"
+      logging: *default-logging
 
 
     ledgerdb:
@@ -38,6 +54,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
 
     balancereader:
       build:
@@ -49,6 +66,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
     
     ledgerwriter:
       build:
@@ -60,6 +78,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
 
     transactionhistory:
       build:
@@ -71,6 +90,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
 
     accountsdb:
       build:
@@ -82,6 +102,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
 
     userservice:
       build:
@@ -93,6 +114,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
 
     contacts:
       build:
@@ -104,6 +126,7 @@ services:
         - ./root/.ssh:/root/.ssh
       networks:
         - bom
+      logging: *default-logging
     
     frontend:
       build:
@@ -120,6 +143,7 @@ services:
         - "traefik.http.services.bom.loadbalancer.server.port=8080"
         - "traefik.http.routers.bom.rule=Host(`bom.localhost`)"
         - "traefik.http.routers.bom.entrypoints=web"
+      logging: *default-logging
 
 networks:
   bom:
