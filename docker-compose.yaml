@@ -1,0 +1,126 @@
+version: "3.7"
+services: 
+    traefik:
+      image: "traefik:v2.4"
+      container_name: "traefik"
+      command:
+          #- "--log.level=DEBUG"
+          - "--api.insecure=true"
+          - "--providers.docker=true"
+          - "--providers.docker.exposedbydefault=false"
+          - "--entrypoints.web.address=:80"
+      ports:
+          - "80:80"
+          - "8080:8080"
+      volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      networks:
+          - bom
+
+    adminer:
+      image: adminer
+      networks:
+        - bom
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+        - "traefik.http.routers.adminer.rule=Host(`adminer.localhost`)"
+        - "traefik.http.routers.adminer.entrypoints=web"
+
+
+    ledgerdb:
+      build: 
+        context: ./src/ledger-db
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+
+    balancereader:
+      build:
+        context: ./src/balancereader
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+    
+    ledgerwriter:
+      build:
+        context: ./src/ledgerwriter
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+
+    transactionhistory:
+      build:
+        context: ./src/transactionhistory
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+
+    accountsdb:
+      build:
+        context: ./src/accounts-db
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+
+    userservice:
+      build:
+        context: ./src/userservice
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+
+    contacts:
+      build:
+        context: ./src/contacts
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+    
+    frontend:
+      build:
+        context: ./src/frontend
+        dockerfile: Dockerfile
+      env_file:
+        - .env
+      volumes:
+        - ./root/.ssh:/root/.ssh
+      networks:
+        - bom
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.services.bom.loadbalancer.server.port=8080"
+        - "traefik.http.routers.bom.rule=Host(`bom.localhost`)"
+        - "traefik.http.routers.bom.entrypoints=web"
+
+networks:
+  bom:
+    driver: bridge
