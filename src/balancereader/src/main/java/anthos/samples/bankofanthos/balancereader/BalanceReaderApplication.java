@@ -82,12 +82,7 @@ public class BalanceReaderApplication {
         return StackdriverMeterRegistry.builder(new StackdriverConfig() {
             @Override
             public boolean enabled() {
-                boolean enableMetricsExport = true;
-
-                if (System.getenv("ENABLE_METRICS") != null
-                    && System.getenv("ENABLE_METRICS").equals("false")) {
-                    enableMetricsExport = false;
-                }
+                boolean enableMetricsExport = false;
 
                 LOGGER.info(String.format("Enable metrics export: %b",
                     enableMetricsExport));
