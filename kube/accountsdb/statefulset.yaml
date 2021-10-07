@@ -21,7 +21,7 @@ spec:
       serviceAccountName: default
       containers:
       - name: accountsdb
-        image: 593393184947.dkr.ecr.us-east-1.amazonaws.com/vre/accountsdb:69eef8b51d9d676ee01a592066eb7e4bd89d76c8
+        image: 593393184947.dkr.ecr.us-east-1.amazonaws.com/vre/accountsdb:94f66e3019c09c5d148c4dda42b7ef5f0a8c6ed3
         envFrom:
           - configMapRef:
               name: environment-config
