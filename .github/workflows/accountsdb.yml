@@ -17,11 +17,16 @@ jobs:
 
       env:
         REPO_NAME: vre/accountsdb
-        KUBE_IMAGE_FILE: ./kube/accountsdb/statefulset.yaml
+        KUBE_PREFIX: ./bom-deploy
+        KUBE_IMAGE_FILE: accountsdb/statefulset.yaml
+        SRC_PREFIX: ./bank-of-midgard
+        SRC_DIR: src/accounts-db
 
       steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: ${{ env.SRC_PREFIX }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -45,27 +50,26 @@ jobs:
           ECR_REPOSITORY: ${{ env.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/accounts-db
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ${{ env.SRC_PREFIX}}/${{ env.SRC_DIR }}
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: checkout kube
+        uses: actions/checkout@master
+        with:
+          repository: HackSafemoon/bom-deploy
+          token: ${{ secrets.ACTIONS_TOKEN }}
+          path: ${{ env.KUBE_PREFIX }}
 
       - name: update manifest
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
-        run: ./scripts/update-image.sh $ECR_REGISTRY $ECR_REPOSITORY $IMAGE_TAG ${{ env.KUBE_IMAGE_FILE }}
+        run: ./scripts/update-image.sh $ECR_REGISTRY $ECR_REPOSITORY $IMAGE_TAG ${{ env.KUBE_PREFIX }}/${{ env.KUBE_IMAGE_FILE }}
 
-      - name: check for changes
-        run: git status
-
-      - name: stage changed files
-        run: git add .
-      
-      - name: commit changed files
-        run: git commit -m "Auto Updating AccountsDB sha"
-      
-      - name: fetch from master
-        run: git fetch origin master
-
-      - name: push to master
-        run: git push origin HEAD:master
+      - name: update kube
+        run: |
+          cd ${{ env.KUBE_PREFIX }}
+          git add .
+          git commit -m "updating ${{ env.REPO_NAME }} image"
+          git push
