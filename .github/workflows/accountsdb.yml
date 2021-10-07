@@ -3,12 +3,12 @@ name: Build Accounts DB
 on:
   pull_request:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/accounts-db/*'
   push:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/accounts-db/*'
 
 env:
   REPO_NAME: vre/accountsdb
