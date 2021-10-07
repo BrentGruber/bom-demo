@@ -3,12 +3,12 @@ name: Build Accounts DB
 on:
   pull_request:
     branches: [master]
-    paths:
-      - 'src/accounts-db/*'
+    # paths:
+    #   - 'src/accounts-db/*'
   push:
     branches: [master]
-    paths:
-      - 'src/accounts-db/*'
+    # paths:
+    #   - 'src/accounts-db/*'
 
 jobs:
   build:
@@ -57,7 +57,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: HackSafemoon/bom-deploy
-          token: ${{ secrets.ACTIONS_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ env.KUBE_PREFIX }}
 
       - name: update manifest
