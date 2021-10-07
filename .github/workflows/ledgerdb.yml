@@ -3,12 +3,12 @@ name: Build Ledger DB
 on:
   pull_request:
     branches: [master]
-    # paths:
-    #   - 'src/ledger-db/*'
+    paths:
+      - 'src/ledger-db/*'
   push:
     branches: [master]
-    # paths:
-    #   - 'src/ledger-db/*'
+    paths:
+      - 'src/ledger-db/*'
 
 jobs:
   build:
