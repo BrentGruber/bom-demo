@@ -79,7 +79,7 @@ jobs:
 
       - name: update kube
         run: |
-          cd ${{ env.KUBE_PREFIX }}
+          ls
           git add .
           git commit -m "updating ${{ env.REPO_NAME }} image"
           git push
