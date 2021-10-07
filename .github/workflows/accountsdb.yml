@@ -10,31 +10,26 @@ on:
     # paths:
     #   - 'src/accounts-db/*'
 
+env:
+  REPO_NAME: vre/accountsdb
+  KUBE_PREFIX: ./kube
+  KUBE_IMAGE_FILE: accountsdb/statefulset.yaml
+  SRC_PREFIX: ./app
+  SRC_DIR: src/accounts-db
+
 jobs:
   build:
       name: Upload to ECR
       runs-on: self-hosted
 
-      env:
-        REPO_NAME: vre/accountsdb
-        KUBE_PREFIX: ./kube
-        KUBE_IMAGE_FILE: accountsdb/statefulset.yaml
-        SRC_PREFIX: ./app
-        SRC_DIR: src/accounts-db
+      outputs:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
 
       steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           path: ${{ env.SRC_PREFIX }}
-
-      - name: checkout kube
-        uses: actions/checkout@master
-        with:
-          clean: false
-          repository: HackSafemoon/bom-deploy
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: ${{ env.KUBE_PREFIX }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -61,9 +56,21 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ${{ env.SRC_PREFIX}}/${{ env.SRC_DIR }}
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+  deploy:
+    name: Deploy to EKS
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: checkout kube
+        uses: actions/checkout@master
+        with:
+          repository: HackSafemoon/bom-deploy
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: update manifest
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ needs.build.outputs.ECR_REGISTRY}}
           ECR_REPOSITORY: ${{ env.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         run: ./scripts/update-image.sh $ECR_REGISTRY $ECR_REPOSITORY $IMAGE_TAG ${{ env.KUBE_PREFIX }}/${{ env.KUBE_IMAGE_FILE }}
