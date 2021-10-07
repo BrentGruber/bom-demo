@@ -19,7 +19,7 @@
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout
-              pattern='{"timestamp": "%d{yyyy-MM-dd HH:mm:ss}", "message": "%M | %msg", "severity": "%level"}%n' />
+                    pattern='{"timestamp": "%d{yyyy-MM-dd HH:mm:ss}", "application": ${bundle:application:spring.application.name}, "traceId": "%X{trace_id}", "spandId": "%X{span_id}",   "message": "%M | %msg", "severity": "%level"}%n' />
         </Console>
     </Appenders>
     <Loggers>
