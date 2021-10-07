@@ -33,4 +33,3 @@ variables listed below. You may login to the account using the password
 
 - [deployments/accounts-db](/kubernetes-manifests/accounts-db.yaml)
 - [service/accounts-db](/kubernetes-manifests/accounts-db.yaml)
-

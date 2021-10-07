@@ -17,6 +17,7 @@ jobs:
 
       env:
         REPO_NAME: vre/accountsdb
+        KUBE_IMAGE_FILE: ./kube/accountsdb/statefulset.yaml
 
       steps:
       - name: Checkout
@@ -48,7 +49,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: update manifest
-        run: ./scripts/update-accountsdb.sh ${{ github.sha }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: ./scripts/update-image.sh $ECR_REGISTRY $ECR_REPOSITORY $IMAGE_TAG ${{ env.KUBE_IMAGE_FILE }}
 
       - name: check for changes
         run: git status
