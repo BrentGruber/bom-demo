@@ -17,9 +17,9 @@ jobs:
 
       env:
         REPO_NAME: vre/accountsdb
-        KUBE_PREFIX: /tmp/bom-deploy
+        KUBE_PREFIX: ./kube
         KUBE_IMAGE_FILE: accountsdb/statefulset.yaml
-        SRC_PREFIX: ./bank-of-midgard
+        SRC_PREFIX: ./app
         SRC_DIR: src/accounts-db
 
       steps:
