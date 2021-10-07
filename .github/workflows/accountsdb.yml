@@ -17,7 +17,7 @@ jobs:
 
       env:
         REPO_NAME: vre/accountsdb
-        KUBE_PREFIX: ./bom-deploy
+        KUBE_PREFIX: /tmp/bom-deploy
         KUBE_IMAGE_FILE: accountsdb/statefulset.yaml
         SRC_PREFIX: ./bank-of-midgard
         SRC_DIR: src/accounts-db
@@ -59,7 +59,6 @@ jobs:
           repository: HackSafemoon/bom-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ env.KUBE_PREFIX }}
-          ref: master
 
       - name: update manifest
         env:
