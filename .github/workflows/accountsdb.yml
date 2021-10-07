@@ -15,6 +15,9 @@ jobs:
       name: Upload to ECR
       runs-on: self-hosted
 
+      env:
+        REPO_NAME: vre/accountsdb
+
       steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -33,12 +36,12 @@ jobs:
       - name: Create Repository
         uses: int128/create-ecr-repository-action@v1
         with:
-          repository: vre/mimir
+          repository: ${{ env.REPO_NAME }}
 
       - name: Build, tag, and push to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: vre/accountsdb
+          ECR_REPOSITORY: ${{ env.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/accounts-db
