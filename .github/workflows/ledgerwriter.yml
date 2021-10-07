@@ -1,0 +1,48 @@
+name: Build LedgerWriter Service
+
+on:
+  pull_request:
+    branches: [master]
+    # paths:
+    #   - 'src/contacts/*'
+  push:
+    branches: [master]
+    # paths:
+    #   - 'src/contacts/*'
+
+jobs:
+  build:
+      name: Upload to ECR
+      runs-on: self-hosted
+
+      env:
+        REPO_NAME: vre/ledgerwriter
+
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-region: us-east-1
+          role-duration-seconds: 3599
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+        # Create repository, do nothing if it exists
+      - name: Create Repository
+        uses: int128/create-ecr-repository-action@v1
+        with:
+          repository: ${{ env.REPO_NAME }}
+
+      - name: Build, tag, and push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/accounts-db
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
