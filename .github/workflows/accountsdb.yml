@@ -59,6 +59,7 @@ jobs:
           repository: HackSafemoon/bom-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ env.KUBE_PREFIX }}
+          ref: master
 
       - name: update manifest
         env:
