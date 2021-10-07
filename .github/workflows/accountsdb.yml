@@ -63,10 +63,11 @@ jobs:
 
     steps:
       - name: checkout kube
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
         with:
           repository: HackSafemoon/bom-deploy
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: master
 
       - name: update manifest
         env:
