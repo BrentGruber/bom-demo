@@ -59,3 +59,4 @@ Implemented in Python with Flask.
 
 - [deployments/frontend](/kubernetes-manifests/frontend.yaml)
 - [service/frontend](/kubernetes-manifests/frontend.yaml)
+
