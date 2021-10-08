@@ -31,20 +31,40 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from db import UserDb
 
 from opentelemetry import trace
-from opentelemetry.sdk.trace.export import BatchExportSpanProcessor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.propagators import set_global_textmap
-from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-from opentelemetry.tools.cloud_trace_propagator import CloudTraceFormatPropagator
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
+### OPENTELEMETRY INSTRUMENTATION
+class SpanFormatter(logging.Formatter):
+    def format(self, record):
+        trace_id = trace.get_current_span().get_span_context().trace_id
+        if trace_id == 0:
+            record.trace_id = None
+        else:
+            record.trace_id = "{trace:032x}".format(trace=trace_id)
+        return super().format(record)
 
+resource = Resource(attributes={
+    "service.name": "userservice",
+    "language": "python"
+})
+
+trace.set_tracer_provider(TracerProvider(resource=resource))
+otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317")
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 def create_app():
     """Flask application factory to create instances
     of the Userservice Flask App
     """
     app = Flask(__name__)
+
+    FlaskInstrumentor().instrument_app(app)
+    RequestsInstrumentor().instrument()
 
 
     # Disabling unused-variable for lines with route decorated functions
@@ -222,20 +242,6 @@ def create_app():
     app.logger.setLevel(logging.getLogger('gunicorn.error').level)
     app.logger.info('Starting userservice.')
 
-
-    # Set up tracing and export spans to Cloud Trace.
-    if os.environ['ENABLE_TRACING'] == "true":
-        app.logger.info("✅ Tracing enabled.")
-        # Set up tracing and export spans to Cloud Trace
-        trace.set_tracer_provider(TracerProvider())
-        cloud_trace_exporter = CloudTraceSpanExporter()
-        trace.get_tracer_provider().add_span_processor(
-            BatchExportSpanProcessor(cloud_trace_exporter)
-        )
-        set_global_textmap(CloudTraceFormatPropagator())
-        FlaskInstrumentor().instrument_app(app)
-    else:
-        app.logger.info("🚫 Tracing disabled.")
 
 
     app.config['VERSION'] = os.environ.get('VERSION')
