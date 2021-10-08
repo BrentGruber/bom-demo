@@ -59,3 +59,4 @@ Implemented in Java with Spring Boot and Guava.
 
 - [deployments/transactionhistory](/kubernetes-manifests/transaction-history.yaml)
 - [service/transactionhistory](/kubernetes-manifests/transaction-history.yaml)
+
