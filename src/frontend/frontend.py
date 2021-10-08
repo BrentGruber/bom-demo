@@ -92,6 +92,10 @@ def create_app():
         Returns the cluster name + zone name where this Pod is running.
 
         """
+        cluster_name = "default"
+        pod_name = "default"
+        pod_zone = "default"
+
         return "Cluster: " + cluster_name + ", Pod: " + pod_name + ", Zone: " + pod_zone, 200
 
     @app.route("/")
