@@ -68,6 +68,9 @@ def create_app():
     RequestsInstrumentor().instrument()
     Jinja2Instrumentor().instrument()
 
+    cluster_name = "default"
+    pod_name = "default"
+    pod_zone = "default"
 
     # Disabling unused-variable for lines with route decorated functions
     # as pylint thinks they are unused
@@ -92,9 +95,6 @@ def create_app():
         Returns the cluster name + zone name where this Pod is running.
 
         """
-        cluster_name = "default"
-        pod_name = "default"
-        pod_zone = "default"
 
         return "Cluster: " + cluster_name + ", Pod: " + pod_name + ", Zone: " + pod_zone, 200
 
