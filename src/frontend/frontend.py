@@ -54,7 +54,7 @@ resource = Resource(attributes={
 })
 
 trace.set_tracer_provider(TracerProvider(resource=resource))
-otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317")
+otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317", insecure=True)
 trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 # pylint: disable-msg=too-many-locals
@@ -66,10 +66,8 @@ def create_app():
 
     FlaskInstrumentor().instrument_app(app)
     RequestsInstrumentor().instrument()
+    Jinja2Instrumentor().instrument()
 
-    log = logging.getLogger("werkzeug")
-    log.setLevel(logging.ERROR)
-    app.logger.setLevel(logging.INFO)
 
     # Disabling unused-variable for lines with route decorated functions
     # as pylint thinks they are unused
