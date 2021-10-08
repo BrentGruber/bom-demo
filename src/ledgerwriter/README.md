@@ -12,6 +12,7 @@ Implemented in Java with Spring Boot.
 | `/transactions`    | POST  | 🔒    |  Submits a transaction to be appended to the ledger. |
 | `/version`         | GET   |       |  Returns the contents of `$VERSION`                  |
 
+
 ### Environment Variables
 
 - `VERSION`
