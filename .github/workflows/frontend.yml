@@ -1,26 +1,36 @@
-name: Build Frontend Service
+name: Build Frontend service
 
 on:
   pull_request:
     branches: [master]
-    paths:
-      - 'src/frontend/*'
+    # paths:
+    #   - 'src/accounts-db/*'
   push:
     branches: [master]
-    paths:
-      - 'src/frontend/*'
+    # paths:
+    #   - 'src/accounts-db/*'
+
+env:
+  REPO_NAME: vre/bom-frontend
+  KUBE_PREFIX: ./kube
+  KUBE_IMAGE_FILE: frontend/deployment.yaml
+  SRC_PREFIX: ./app
+  SRC_DIR: src/frontend
+  REGISTRY: 593393184947.dkr.ecr.us-east-1.amazonaws.com # can't pass this betwen jobs
 
 jobs:
   build:
       name: Upload to ECR
       runs-on: self-hosted
 
-      env:
-        REPO_NAME: vre/bom-frontend
+      outputs:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
 
       steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          path: ${{ env.SRC_PREFIX }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -44,5 +54,35 @@ jobs:
           ECR_REPOSITORY: ${{ env.REPO_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/accounts-db
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ${{ env.SRC_PREFIX}}/${{ env.SRC_DIR }}
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  deploy:
+    name: Deploy to EKS
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: checkout kube
+        uses: actions/checkout@v2
+        with:
+          repository: HackSafemoon/bom-deploy
+          token: ${{ secrets.GH_TOKEN }}
+          ref: master
+
+      - name: update manifest
+        env:
+          ECR_REGISTRY: ${{ env.REGISTRY }}
+          ECR_REPOSITORY: ${{ env.REPO_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          sed -i 's|image: '$ECR_REGISTRY'/'$ECR_REPOSITORY':\(.*\)|image: '$ECR_REGISTRY'/'$ECR_REPOSITORY':'$IMAGE_TAG'|g' ./${{ env.KUBE_IMAGE_FILE }}
+          cat ./${{ env.KUBE_IMAGE_FILE }}
+
+      - name: update kube
+        run: |
+          ls
+          git add .
+          git commit -m "updating ${{ env.REPO_NAME }} image"
+          git push
