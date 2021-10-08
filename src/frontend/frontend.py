@@ -27,18 +27,35 @@ from requests.exceptions import HTTPError, RequestException
 import jwt
 from flask import Flask, abort, jsonify, make_response, redirect, \
     render_template, request, url_for
+from flask.logging import default_handler
 
 from opentelemetry import trace
-from opentelemetry.sdk.trace.export import BatchExportSpanProcessor
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.propagators import set_global_textmap
-from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-from opentelemetry.tools.cloud_trace_propagator import CloudTraceFormatPropagator
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.requests import RequestsInstrumentor
 from opentelemetry.instrumentation.jinja2 import Jinja2Instrumentor
 
+### OPENTELEMETRY INSTRUMENTATION
+class SpanFormatter(logging.Formatter):
+    def format(self, record):
+        trace_id = trace.get_current_span().get_span_context().trace_id
+        if trace_id == 0:
+            record.trace_id = None
+        else:
+            record.trace_id = "{trace:032x}".format(trace=trace_id)
+        return super().format(record)
 
+resource = Resource(attributes={
+    "service.name": "frontend",
+    "language": "python"
+})
+
+trace.set_tracer_provider(TracerProvider(resource=resource))
+otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317")
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 # pylint: disable-msg=too-many-locals
 def create_app():
@@ -46,6 +63,19 @@ def create_app():
     of the Frontend Flask App
     """
     app = Flask(__name__)
+
+    FlaskInstrumentor().instrument_app(app)
+    RequestsInstrumentor().instrument()
+
+    log = logging.getLogger("werkzeug")
+    log.setLevel(logging.ERROR)
+    app.logger.setLevel(logging.INFO)
+    default_handler.setFormatter(
+        SpanFormatter(
+            'time="%(asctime)s" service=%(name)s level=%(levelname)s %(message)s traceID=%(trace_id)s'
+        )
+    )
+
 
     # Disabling unused-variable for lines with route decorated functions
     # as pylint thinks they are unused
