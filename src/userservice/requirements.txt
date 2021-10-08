@@ -107,12 +107,12 @@ opentelemetry-exporter-otlp==1.0.0
     # via -r requirements.in
 opentelemetry-instrumentation-flask==0.19b0
     # via -r requirements.in
-opentelemetry-instrumentation-sqlalchemy==0.13b0
+opentelemetry-instrumentation-sqlalchemy==0.19b0
     # via -r requirements.in
 opentelemetry-instrumentation-requests==0.19b0
-opentelemetry-instrumentation-wsgi==0.13b0
+opentelemetry-instrumentation-wsgi==0.19b0
     # via opentelemetry-instrumentation-flask
-opentelemetry-instrumentation==0.13b0
+opentelemetry-instrumentation==0.19b0
     # via
     #   opentelemetry-instrumentation-flask
     #   opentelemetry-instrumentation-sqlalchemy
