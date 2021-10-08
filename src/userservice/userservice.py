@@ -26,6 +26,7 @@ import re
 import bcrypt
 import jwt
 from flask import Flask, jsonify, request
+from flask.logging import default_handler
 import bleach
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from db import UserDb
@@ -66,6 +67,12 @@ def create_app():
     FlaskInstrumentor().instrument_app(app)
     RequestsInstrumentor().instrument()
 
+
+    default_handler.setFormatter(
+        SpanFormatter(
+            'time="%(asctime)s" service=%(name)s level=%(levelname)s %(message)s traceID=%(trace_id)s'
+        )
+    )
 
     # Disabling unused-variable for lines with route decorated functions
     # as pylint thinks they are unused
