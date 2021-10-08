@@ -3,12 +3,12 @@ name: Build User Service
 on:
   pull_request:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/userservice/*'
   push:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/userservice/*'
 
 env:
   REPO_NAME: vre/userservice

@@ -3,12 +3,12 @@ name: Build Frontend service
 on:
   pull_request:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/frontend/*'
   push:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/frontend/*'
 
 env:
   REPO_NAME: vre/bom-frontend

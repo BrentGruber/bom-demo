@@ -3,12 +3,12 @@ name: Build Transaction History Service
 on:
   pull_request:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/transactionhistory/*'
   push:
     branches: [master]
-    # paths:
-    #   - 'src/accounts-db/*'
+    paths:
+      - 'src/transactionhistory/*'
 
 env:
   REPO_NAME: vre/transactionhistory
