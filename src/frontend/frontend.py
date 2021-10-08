@@ -582,22 +582,6 @@ def create_app():
     app.logger.setLevel(logging.getLogger('gunicorn.error').level)
     app.logger.info('Starting frontend service.')
 
-    # Set up tracing and export spans to Cloud Trace.
-    if os.environ['ENABLE_TRACING'] == "true":
-        app.logger.info("✅ Tracing enabled.")
-        trace.set_tracer_provider(TracerProvider())
-        cloud_trace_exporter = CloudTraceSpanExporter()
-        trace.get_tracer_provider().add_span_processor(
-            BatchExportSpanProcessor(cloud_trace_exporter)
-        )
-        set_global_textmap(CloudTraceFormatPropagator())
-        # Add tracing auto-instrumentation for Flask, jinja and requests
-        FlaskInstrumentor().instrument_app(app)
-        RequestsInstrumentor().instrument()
-        Jinja2Instrumentor().instrument()
-    else:
-        app.logger.info("🚫 Tracing disabled.")
-
     return app
 
 
