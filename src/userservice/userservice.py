@@ -55,7 +55,7 @@ resource = Resource(attributes={
 })
 
 trace.set_tracer_provider(TracerProvider(resource=resource))
-otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317")
+otlp_exporter = OTLPSpanExporter(endpoint=f"grafana-agent.grafana-agent.svc.cluster.local:4317", insecure=True)
 trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
 
 def create_app():
@@ -66,13 +66,6 @@ def create_app():
 
     FlaskInstrumentor().instrument_app(app)
     RequestsInstrumentor().instrument()
-
-
-    default_handler.setFormatter(
-        SpanFormatter(
-            'time="%(asctime)s" service=%(name)s level=%(levelname)s %(message)s traceID=%(trace_id)s'
-        )
-    )
 
     # Disabling unused-variable for lines with route decorated functions
     # as pylint thinks they are unused
@@ -247,6 +240,12 @@ def create_app():
     # Set up logger
     app.logger.handlers = logging.getLogger('gunicorn.error').handlers
     app.logger.setLevel(logging.getLogger('gunicorn.error').level)
+    for handler in app.logger.handlers:
+        handler.setFormatter(
+            SpanFormatter(
+                'time="%(asctime)s" service=%(name)s level=%(levelname)s %(message)s traceID=%(trace_id)s'
+            )
+        )
     app.logger.info('Starting userservice.')
 
 
