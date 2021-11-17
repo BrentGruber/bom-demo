@@ -240,9 +240,9 @@ def create_app():
                                 "uuid": request.form['uuid']}
             _submit_transaction(transaction_data)
             app.logger.info('Payment initiated successfully.')
-            balance = _get_balance(token)
-            if not balance:
-                return abort(500)
+            # balance = _get_balance(token)
+            # if not balance:
+            #     return abort(500)
             return redirect(url_for('home',
                                     msg='Payment successful',
                                     _external=True,
