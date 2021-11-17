@@ -240,6 +240,7 @@ def create_app():
                                 "uuid": request.form['uuid']}
             _submit_transaction(transaction_data)
             app.logger.info('Payment initiated successfully.')
+            _get_balance(token)
             return redirect(url_for('home',
                                     msg='Payment successful',
                                     _external=True,
@@ -322,6 +323,26 @@ def create_app():
                                 msg='Deposit failed',
                                 _external=True,
                                 _scheme=app.config['SCHEME']))
+
+    def _get_balance(token):
+        token_data = jwt.decode(token, verify=False)
+        display_name = token_data['name']
+        username = token_data['user']
+        account_id = token_data['acct']
+
+        hed = {'Authorization': 'Bearer ' + token}
+        # get balance
+        balance = None
+        try:
+            url = '{}/{}'.format(app.config["BALANCES_URI"], account_id)
+            app.logger.debug('Getting account balance.')
+            response = requests.get(url=url, headers=hed, timeout=app.config['BACKEND_TIMEOUT'])
+            if response:
+                balance = response.json()
+        except (requests.exceptions.RequestException, ValueError) as err:
+            app.logger.error('Error getting account balance: %s', str(err))
+
+        return balance
 
     def _submit_transaction(transaction_data):
         app.logger.debug('Submitting transaction.')
