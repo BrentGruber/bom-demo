@@ -240,7 +240,9 @@ def create_app():
                                 "uuid": request.form['uuid']}
             _submit_transaction(transaction_data)
             app.logger.info('Payment initiated successfully.')
-            _get_balance(token)
+            balance = _get_balance(token)
+            if not balance:
+                return abort(500)
             return redirect(url_for('home',
                                     msg='Payment successful',
                                     _external=True,
@@ -334,7 +336,8 @@ def create_app():
         # get balance
         balance = None
         try:
-            url = '{}/{}'.format(app.config["BALANCES_URI"], account_id)
+            url = app.config["BALANCES_URI"]
+            #url = '{}/{}'.format(app.config["BALANCES_URI"], account_id)
             app.logger.debug('Getting account balance.')
             response = requests.get(url=url, headers=hed, timeout=app.config['BACKEND_TIMEOUT'])
             if response:
