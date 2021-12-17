@@ -49,6 +49,5 @@ Implemented in Java with Spring Boot and Guava.
 
 ### Kubernetes Resources
 
-
 - [deployments/balancereader](/kubernetes-manifests/balance-reader.yaml)
 - [service/balancereader](/kubernetes-manifests/balance-reader.yaml)
