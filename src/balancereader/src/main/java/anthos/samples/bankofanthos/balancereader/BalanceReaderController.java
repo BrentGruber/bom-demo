@@ -135,6 +135,12 @@ public final class BalanceReaderController {
         return new ResponseEntity<String>("ok", HttpStatus.OK);
     }
 
+    @GetMapping("/balances")
+    public ResponseEntity Balances() {
+        LOGGER.error("Unable to find requested balances, account id not provided");
+        return new ResponseEntity<String>("Please provide valid account id when requesting balances", HttpStatus.NOT_FOUND);
+    }
+
     /**
      * Return the balance for the specified account.
      *
